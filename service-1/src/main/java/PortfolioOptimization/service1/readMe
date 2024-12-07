@@ -1,0 +1,74 @@
+So, this first microservice is a data ingestion microservice.
+This service is responsible for fetching data from external APIs (Alpha Vantage and Polygon) and
+publishing it to Kafka topics.
+
+So it's very clear that this service doesn't need to persist the data directly to a database.
+And that why I have no reason to create DAO or entity classes.
+=======================================================================================================================
+
+The second microservice (data processing) is the one that will consume the data from the Kafka topics,
+process it, and save it to the DB.
+That's where I will need the DAO and entity classes for data persistence.
+This service (second microservice: Data Processing) will:
+
+1. Consume the messages from Kafka topics.
+2. Transform or process the data if needed.
+3. Persist the data into the DB (It can be any database).
+=======================================================================================================================
+
+The flow is like -
+
+1- Controller Layer (AlphaVantageController & PolygonController classes) : Entry point of application.
+
+2- Service Layer (AlphaVantageService & PolygonService classes) :
+   Handles the core logic.
+   Intermediary bw the controller layer and the client layer.
+   This layer uses the client classes.
+
+3- Client Layer (AlphaVantageClient & PolygonClient classes): Used by the service layer to fetch the actual data.
+   It invokes the client classes to fetch the data, applies any necessary business logic,
+   and prepares the data for sending to Kafka.
+
+4- Kafka Producer: After fetching and processing the data, the service layer passes it to the Kafka producer,
+   which will publish the data to the appropriate Kafka topics.
+   The Kafka producer is the final step in the flow for this microservice.
+
+
+-------           ---------         ----------            ------------           ----------       ----------       ------
+
+The flow would look something like this:
+HTTP Client → Fetches data from external APIs.
+Service Layer → Processes the data and decides which Kafka topic to send it to.
+Kafka Producer → Publishes the data to a Kafka topic
+=======================================================================================================================
+
+
+**
+ Also here I am not persisting data to a database and but only processing or passing it through (e.g., writing to Kafka),
+ and that is why I do not strictly need entity classes.
+ However, it can still be beneficial to use data transfer objects (DTOs) or plain Java objects (POJOs) to represent
+ the structure of the data that I am trying to handle.
+
+Not DB specific but using them I can easily define clear data contracts for the kind of messages being sent to or received from Kafka.
+
+
+** A common question can be - What to use instead of entity classes?
+If you're just processing data and not saving it in a database:
+Use POJOs or DTOs.
+
+Because these can simply define the structure of the data that we try to handle.
+
+** Another common question is -  When to use entity classes?
+Use entity classes only if you're saving or fetching data from a database.
+They typically include annotations like @Entity, @Table, and field annotations like @Id.
+
+
+
+***** At Last.....
+
+I think minimal DTOs (In simple words: our entity classes without the JPA annotations like @Entity, @Table, @Id, and so on),
+like they serve as plain Java objects (POJOs) to hold data, but they are not tied to a database.
+And they help us to have a clear structure for the kind of data we want or going to handle.
+
+=======================================================================================================================
+=======================================================================================================================
